@@ -3,7 +3,8 @@
 
 # TPATH = ../../gcc-arm-none-eabi-4.9/bin
 # TPATH = ../gcc-arm-none-eabi-5.4/bin
-TPATH = /usr/bin
+TPATH = /opt/gcc-arm/bin
+# TPATH = /usr/bin
 TCHAIN = arm-none-eabi
 
 #-------------------------------------------------------------------------------
@@ -40,13 +41,15 @@ TCHAIN = arm-none-eabi
 # WITH_OPTS = blue_pill rfm69 beeper vario i2c1 bmp180 sdlog relay config # for the test system (no knob but the SD card)
 # WITH_OPTS = blue_pill rfm69 beeper vario i2c1 bmp180 relay config gps_pps gps_enable gps_ubx_pass gps_nmea_pass
 # WITH_OPTS = maple_mini rfm69 i2c1 bmp180 relay config gps_pps gps_enable
-WITH_OPTS = blue_pill rfm69 beeper i2c1 bmp180 relay config gps_pps gps_enable flashlog # gps_ubx_pass gps_nmea_pass
+# WITH_OPTS = blue_pill rfm69 beeper i2c1 bmp180 relay config gps_pps gps_enable flashlog # gps_ubx_pass gps_nmea_pass
 # WITH_OPTS = blue_pill rfm69 beeper vario i2c1 bmp180 relay config gps_pps gps_enable
 # WITH_OPTS = blue_pill rfm69 beeper relay config
 # WITH_OPTS = blue_pill rfm95 beeper vario i2c1 bmp280 relay config
 # WITH_OPTS = blue_pill beeper vario i2c1 bmp280 config gps_pps batt_sense rf_irq sx1272 relay
 
 # WITH_OPTS = rfm69 relay config swap_uarts i2c2 bmp280 ogn_cube_1 # for OGN-CUBE-1
+
+WITH_OPTS = blue_pill i2c1 bmp180 config gps_pps pps_irq rf_irq rfm69 relay
 
 # MCU = STM32F103C8  # STM32F103C8 for no-name STM32F1 board, STM32F103CB for Maple mini
 
@@ -334,6 +337,12 @@ arch:	clean
 	tar cvzf diy-tracker.tgz makefile *.h *.cc *.cpp *.ld *.py cmsis cmsis_boot stm_lib FreeRTOS_8.2.0 FreeRTOS_9.0.0 # free_rtos # FRT_Library
 
 #-------------------------------------------------------------------------------
+
+monitor:
+	platformio serialports monitor --port /dev/cu.SLAB_USBtoUART --baud 115200
+
+upload:
+	openocd -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f1x.cfg -c "program $(OUTDIR)/main.elf verify reset exit"
 
 # Include the dependency files.
 -include $(wildcard $(OBJDIR)/*.d) faked.include.file
