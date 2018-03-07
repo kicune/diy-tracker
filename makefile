@@ -4,7 +4,7 @@
 # TPATH = ../../gcc-arm-none-eabi-4.9/bin
 # TPATH = ../gcc-arm-none-eabi-5.4/bin
 TPATH = /opt/gcc-arm/bin
-# TPATH = /usr/bin
+# TPATH = /opt/arm-tools/gcc-arm-none-eabi-6-2017-q2-update/bin
 TCHAIN = arm-none-eabi
 
 #-------------------------------------------------------------------------------
@@ -14,6 +14,7 @@ TCHAIN = arm-none-eabi
 # sdcard        ... SD card interface with FAT filesystem
 # bmp180        ... barometric pressure bmp180 sensor
 # bmp280        ... barometric pressure bmp280 sensor
+# bme280        ... barometric pressure and humidity bme280 sensor
 # beeper        ... beeper
 # vario         ... vario sound (selects beeper)
 # sdlog         ... logging to sdcard (selects sdcard too)
@@ -29,6 +30,8 @@ TCHAIN = arm-none-eabi
 # relay         ... packet-relay code (conditional code not implemented yet)
 # gps_pps       ... GPS does deliver PPS, otherwise we get the timing from when the GPS starts sending serial data
 # gps_enable    ... GPS senses the "enable" line so it is possibly to shut it down
+# gps_config    ... GPS is setup for higher baudrate and the airborne navigation mode
+# gps_ubx       ... GPS supports UBX protocol - for GPS configuration
 # gps_ubx_pass  ... pass UBX messages between the console and the GPS - for GPS configuration
 # gps_nmea_pass ... pass (P-private) NMEA messages between the console and the GPS - for GPS configuration
 
@@ -41,17 +44,19 @@ TCHAIN = arm-none-eabi
 # WITH_OPTS = blue_pill rfm69 beeper vario i2c1 bmp180 sdlog relay config # for the test system (no knob but the SD card)
 # WITH_OPTS = blue_pill rfm69 beeper vario i2c1 bmp180 relay config gps_pps gps_enable gps_ubx_pass gps_nmea_pass
 # WITH_OPTS = maple_mini rfm69 i2c1 bmp180 relay config gps_pps gps_enable
-# WITH_OPTS = blue_pill rfm69 beeper i2c1 bmp180 relay config gps_pps gps_enable flashlog # gps_ubx_pass gps_nmea_pass
+# WITH_OPTS = blue_pill rfm69 beeper i2c1 bmp180 relay pflaa config gps_config gps_ubx gps_pps gps_enable flashlog # gps_ubx_pass gps_nmea_pass
 # WITH_OPTS = blue_pill rfm69 beeper vario i2c1 bmp180 relay config gps_pps gps_enable
 # WITH_OPTS = blue_pill rfm69 beeper relay config
 # WITH_OPTS = blue_pill rfm95 beeper vario i2c1 bmp280 relay config
 # WITH_OPTS = blue_pill beeper vario i2c1 bmp280 config gps_pps batt_sense rf_irq sx1272 relay
+# WITH_OPTS = blue_pill i2c1 bmp280 config gps_pps pps_irq rf_irq rfm69 relay sdcard sdlog
 
 # WITH_OPTS = rfm69 relay config swap_uarts i2c2 bmp280 ogn_cube_1 # for OGN-CUBE-1
 
-WITH_OPTS = blue_pill i2c1 bmp180 config gps_pps pps_irq rf_irq rfm69 relay
+WITH_OPTS = blue_pill i2c1 bmp180 config gps_pps pps_irq rf_irq rfm69 relay pflaa
 
 # MCU = STM32F103C8  # STM32F103C8 for no-name STM32F1 board, STM32F103CB for Maple mini
+MCU = STM32F103CB
 
 RTOS = FreeRTOS_9.0.0
 
@@ -110,6 +115,11 @@ endif
 
 ifneq ($(findstring bmp280,$(WITH_OPTS)),)
   WITH_DEFS += -DWITH_BMP280
+  C_SRC += atmosphere.cpp
+endif
+
+ifneq ($(findstring bme280,$(WITH_OPTS)),)
+  WITH_DEFS += -DWITH_BME280
   C_SRC += atmosphere.cpp
 endif
 
@@ -183,12 +193,24 @@ ifneq ($(findstring relay,$(WITH_OPTS)),)
   WITH_DEFS += -DWITH_RELAY
 endif
 
+ifneq ($(findstring pflaa,$(WITH_OPTS)),)
+  WITH_DEFS += -DWITH_PFLAA
+endif
+
 ifneq ($(findstring gps_pps,$(WITH_OPTS)),)
   WITH_DEFS += -DWITH_GPS_PPS
 endif
 
-ifneq ($(findstring gps_enable,$(WITH_OPTS)),)
-  WITH_DEFS += -DWITH_GPS_ENABLE
+ifneq ($(findstring gps_pps,$(WITH_OPTS)),)
+  WITH_DEFS += -DWITH_GPS_PPS
+endif
+
+ifneq ($(findstring gps_config,$(WITH_OPTS)),)
+  WITH_DEFS += -DWITH_GPS_CONFIG
+endif
+
+ifneq ($(findstring gps_ubx,$(WITH_OPTS)),)
+  WITH_DEFS += -DWITH_GPS_CONFIG -DWITH_GPS_UBX
 endif
 
 ifneq ($(findstring gps_ubx_pass,$(WITH_OPTS)),)
