@@ -361,7 +361,7 @@ arch:	clean
 #-------------------------------------------------------------------------------
 
 monitor:
-	platformio serialports monitor --port /dev/cu.SLAB_USBtoUART --baud 115200
+	/Users/lisak/bin/pio serialports monitor --port /dev/cu.SLAB_USBtoUART --baud 115200
 
 upload:
 	openocd -f /usr/local/share/openocd/scripts/interface/stlink-v2.cfg -f /usr/local/share/openocd/scripts/target/stm32f1x.cfg -c "program $(OUTDIR)/main.elf verify reset exit"
